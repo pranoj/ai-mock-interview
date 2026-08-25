@@ -12,6 +12,7 @@ export default function InterviewSessionPage() {
     const [answer, setAnswer] = useState("");
     const [feedback, setFeedback] = useState("");
     const [loading, setLoading] = useState(false);
+    const [qaPairs, setQaPairs] = useState<any[]>([]);
     const router = useRouter();
 
     useEffect(() => {
@@ -33,25 +34,48 @@ export default function InterviewSessionPage() {
 
     const handleSubmit = async () => {
         setLoading(true);
-        const res = await fetch("/api/generate-feedback", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                question: currentQuestion.question,
-                answer: answer,
-            }),
-        });
-        const data = await res.json();
-        setFeedback(data.feedback);
+        try {
+            const res = await fetch("/api/generate-feedback", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    question: currentQuestion.question,
+                    answer: answer,
+                }),
+            });
+            const data = await res.json();
+            if (data.error) {
+                setFeedback(`Error: ${data.error} Please try submitting again.`);
+            } else {
+                setFeedback(data.feedback);
+            }
+        } catch {
+            setFeedback("Something went wrong. Please try submitting again.");
+        }
         setLoading(false);
     };
 
     const handleNext = () => {
+        const updatedPairs = [
+            ...qaPairs,
+            {
+                question: currentQuestion.question,
+                type: currentQuestion.type,
+                answer: answer,
+                feedback: feedback,
+            },
+        ];
+        setQaPairs(updatedPairs);
+
         if (currentIndex < questions.length - 1) {
             setCurrentIndex(currentIndex + 1);
             setAnswer("");
             setFeedback("");
         } else {
+            sessionStorage.setItem(
+                "interviewResults",
+                JSON.stringify({ role, qaPairs: updatedPairs })
+            );
             router.push("/interview/summary");
         }
     };

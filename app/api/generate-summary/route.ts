@@ -20,7 +20,7 @@ Give an overall summary in this exact JSON format, no other text:
 }`;
 
     const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
         {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -31,6 +31,14 @@ Give an overall summary in this exact JSON format, no other text:
     );
 
     const data = await response.json();
+
+    if (!data.candidates) {
+        return NextResponse.json(
+            { error: "Gemini couldn't generate your summary. Please try again." },
+            { status: 503 }
+        );
+    }
+
     const text = data.candidates[0].content.parts[0].text;
     const cleaned = text.replace(/```json|```/g, "").trim();
     const summary = JSON.parse(cleaned);
