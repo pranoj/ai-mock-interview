@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 const ROLES = [
     "Frontend Engineer",
@@ -14,6 +15,17 @@ export default function NewInterviewPage() {
     const [role, setRole] = useState(ROLES[0]);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const { user, loading: authLoading } = useAuth();
+
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push("/login");
+        }
+    }, [user, authLoading, router]);
+
+    if (authLoading || !user) {
+        return null;
+    }
 
     const handleStart = async () => {
         setLoading(true);

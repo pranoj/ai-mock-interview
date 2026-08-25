@@ -2,12 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function InterviewSummaryPage() {
     const [summary, setSummary] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const router = useRouter();
+    const { user, loading: authLoading } = useAuth();
+
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push("/login");
+        }
+    }, [user, authLoading, router]);
 
     useEffect(() => {
         const stored = sessionStorage.getItem("interviewResults");
@@ -38,6 +46,10 @@ export default function InterviewSummaryPage() {
 
         fetchSummary();
     }, [router]);
+
+    if (authLoading || !user) {
+        return null;
+    }
 
     if (loading) {
         return <p className="p-8">Generating your summary...</p>;

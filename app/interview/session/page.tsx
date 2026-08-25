@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 type Question = { question: string; type: string };
 
@@ -14,6 +15,13 @@ export default function InterviewSessionPage() {
     const [loading, setLoading] = useState(false);
     const [qaPairs, setQaPairs] = useState<any[]>([]);
     const router = useRouter();
+    const { user, loading: authLoading } = useAuth();
+
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push("/login");
+        }
+    }, [user, authLoading, router]);
 
     useEffect(() => {
         const stored = sessionStorage.getItem("currentInterview");
@@ -25,6 +33,10 @@ export default function InterviewSessionPage() {
         setQuestions(data.questions);
         setRole(data.role);
     }, [router]);
+
+    if (authLoading || !user) {
+        return null;
+    }
 
     if (questions.length === 0) {
         return <p className="p-8">Loading questions...</p>;
