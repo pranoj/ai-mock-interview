@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function InterviewSummaryPage() {
     const [summary, setSummary] = useState<any>(null);
@@ -37,6 +39,14 @@ export default function InterviewSummaryPage() {
                     setError(data.error);
                 } else {
                     setSummary(data.summary);
+
+                    await addDoc(collection(db, "interviews"), {
+                        userId: user?.uid,
+                        role,
+                        qaPairs,
+                        summary: data.summary,
+                        createdAt: serverTimestamp(),
+                    });
                 }
             } catch {
                 setError("Something went wrong generating your summary.");
@@ -45,7 +55,7 @@ export default function InterviewSummaryPage() {
         };
 
         fetchSummary();
-    }, [router]);
+    }, [router, user]);
 
     if (authLoading || !user) {
         return null;
