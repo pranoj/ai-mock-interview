@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function SignupPage() {
     const [email, setEmail] = useState("");
@@ -18,7 +19,13 @@ export default function SignupPage() {
             await createUserWithEmailAndPassword(auth, email, password);
             router.push("/dashboard");
         } catch (err: any) {
-            setError(err.message);
+            if (err.code === "auth/email-already-in-use") {
+                setError("An account with this email already exists. Try logging in instead.");
+            } else if (err.code === "auth/weak-password") {
+                setError("Password should be at least 6 characters.");
+            } else {
+                setError("Something went wrong. Please try again.");
+            }
         }
     };
 
@@ -46,6 +53,12 @@ export default function SignupPage() {
                 <button type="submit" className="w-full bg-black text-white p-2 rounded">
                     Sign Up
                 </button>
+                <p className="text-sm text-center text-gray-600">
+                    Already have an account?{" "}
+                    <Link href="/login" className="text-blue-600 font-medium">
+                        Log In
+                    </Link>
+                </p>
             </form>
         </div>
     );
