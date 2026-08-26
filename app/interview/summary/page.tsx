@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
@@ -12,6 +12,7 @@ export default function InterviewSummaryPage() {
     const [error, setError] = useState("");
     const router = useRouter();
     const { user, loading: authLoading } = useAuth();
+    const hasSaved = useRef(false);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -20,6 +21,8 @@ export default function InterviewSummaryPage() {
     }, [user, authLoading, router]);
 
     useEffect(() => {
+        if (!user) return;
+
         const stored = sessionStorage.getItem("interviewResults");
         if (!stored) {
             router.push("/interview/new");
@@ -40,13 +43,16 @@ export default function InterviewSummaryPage() {
                 } else {
                     setSummary(data.summary);
 
-                    await addDoc(collection(db, "interviews"), {
-                        userId: user?.uid,
-                        role,
-                        qaPairs,
-                        summary: data.summary,
-                        createdAt: serverTimestamp(),
-                    });
+                    if (!hasSaved.current) {
+                        hasSaved.current = true;
+                        await addDoc(collection(db, "interviews"), {
+                            userId: user.uid,
+                            role,
+                            qaPairs,
+                            summary: data.summary,
+                            createdAt: serverTimestamp(),
+                        });
+                    }
                 }
             } catch {
                 setError("Something went wrong generating your summary.");
