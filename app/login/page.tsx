@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -18,7 +19,13 @@ export default function LoginPage() {
             await signInWithEmailAndPassword(auth, email, password);
             router.push("/dashboard");
         } catch (err: any) {
-            setError(err.message);
+            if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password") {
+                setError("Incorrect email or password. Please try again.");
+            } else if (err.code === "auth/user-not-found") {
+                setError("No account found with this email. Try signing up instead.");
+            } else {
+                setError("Something went wrong. Please try again.");
+            }
         }
     };
 
@@ -46,6 +53,12 @@ export default function LoginPage() {
                 <button type="submit" className="w-full bg-black text-white p-2 rounded">
                     Log In
                 </button>
+                <p className="text-sm text-center text-gray-600">
+                    Don&apos;t have an account?{" "}
+                    <Link href="/signup" className="text-blue-600 font-medium">
+                        Sign Up
+                    </Link>
+                </p>
             </form>
         </div>
     );

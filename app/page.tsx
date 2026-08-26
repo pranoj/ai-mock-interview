@@ -9,14 +9,14 @@ export default function LandingPage() {
       <p className="text-lg text-gray-600 max-w-xl mb-8">
         PrepPilot generates role-specific interview questions, gives you
         instant AI feedback on every answer, and tracks your progress over
-        time — so you walk into the real interview ready.
+        time. Walk into your next interview ready.
       </p>
       <div className="flex gap-4">
         <Link
           href="/signup"
           className="bg-black text-white px-6 py-3 rounded text-lg font-medium"
         >
-          Start Practicing — Free
+          Start Practicing (Free)
         </Link>
         <Link
           href="/login"
